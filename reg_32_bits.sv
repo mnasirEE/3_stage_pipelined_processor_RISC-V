@@ -1,4 +1,7 @@
-// 
+// reg_32_bits reg1 (.data_in(), 
+//                   .clock(), 
+//                   .reset(), 
+//                   .data_out());
 module reg_32_bits #(
     parameter data_width = 32
 ) (
