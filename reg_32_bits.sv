@@ -11,15 +11,14 @@ module reg_32_bits #(
     output logic [data_width - 1:0] data_out
 );
 // 32 bit register
-reg [data_width - 1:0] register_32_bits;
+// reg [data_width - 1:0] register_32_bits;
 
-always_ff @( posedge clock, posedge reset ) begin : 32bits_register
+always_ff @( posedge clock, posedge reset ) begin : register
     if (reset) begin
-        register_32_bits <= 32'b0;
+        data_out <= 32'b0;
     end
     else begin
-        register_32_bits <= data_in;
-        data_out <= register_32_bits
+        data_out <= data_in;
     end
 end
 

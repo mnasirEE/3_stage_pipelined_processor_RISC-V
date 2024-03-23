@@ -21,10 +21,22 @@ instruction_memory imem (.address(PC),
 
 logic [31:0] instruction_out1;
 
+
+// always_ff @( posedge clk1, posedge reset1 ) begin : register1
+//     if (reset1) begin
+//         instruction_out1 <= 32'b0;
+//     end
+//     else begin
+//         instruction_out1 <= instr_out;
+//     end
+// end
+
 reg_32_bits reg1 (.data_in(instr_out), 
                   .clock(clk1), 
                   .reset(reset1), 
                   .data_out(instruction_out1));
+
+
 
 // reg [31:0] inst_mem [0:511];
 
@@ -49,9 +61,10 @@ logic sel_imm;
 logic read_en;
 logic wrb_en;
 logic write_en;
+reg wr_enableWb;
 controller c1 (.instruction(instruction_out1), 
                 .alu_op(alu_operation), 
-                .regfile_write_enable(wr_enableWb),
+                .regfile_write_enable(wr_enable),
                 .sel_bw_imm_rs2(sel_imm),
                 .dmem_read_en(read_en),
                 .wr_back_sel(wrb_en),
@@ -61,23 +74,24 @@ controller c1 (.instruction(instruction_out1),
 
 logic [4:0] addr_dr, addr_rs1, addr_rs2;
 logic [addr_data_width - 1:0] rs1_data, rs2_data;
+logic [31:0] instruction_out2;
 
-assign addr_dr = instruction_out[11:7];
-assign addr_rs1 = instruction_out[19:15];
-assign addr_rs2 = instruction_out[24:20];
+assign addr_dr = instruction_out2[11:7];
+assign addr_rs1 = instruction_out1[19:15];
+assign addr_rs2 = instruction_out1[24:20];
 
 reg_file r1 (.wr_addr(addr_dr), 
             .r_addr1(addr_rs1), 
             .r_addr2(addr_rs2), 
             .wr_data (wr_back_data), 
-            .write_back_en(wr_enable),
+            .write_back_en(wr_enableWb),
             .clk(clk1),
             .r_data1 (rs1_data), 
             .r_data2 (rs2_data));
 
 logic [31:0] immediate ;
 
-imm_gene immg1 (.inst(instruction_out), 
+imm_gene immg1 (.inst(instruction_out1), 
                 .imm(immediate));
 
 logic [31:0] mux_out1; 
@@ -94,6 +108,17 @@ alu a1 (.operand_a(rs1_data),
 
 logic [31:0] alu_result;
 
+// always_ff @( posedge clk1, posedge reset1 ) begin : register2
+//     if (reset1) begin
+//         alu_result <= 32'b0;
+//     end
+//     else begin
+//         alu_result <= alu_out;
+//     end
+// end
+
+// logic [31:0] alu_result;
+
 reg_32_bits reg2 (.data_in(alu_out), 
                   .clock(clk1), 
                   .reset(reset1), 
@@ -101,12 +126,31 @@ reg_32_bits reg2 (.data_in(alu_out),
 
 logic [31:0] mem_write_data;
 
+// always_ff @( posedge clk1, posedge reset1 ) begin : register3
+//     if (reset1) begin
+//         mem_write_data <= 32'b0;
+//     end
+//     else begin
+//         mem_write_data <= rs2_data;
+//     end
+// end
+
 reg_32_bits reg3 (.data_in(rs2_data), 
                   .clock(clk1), 
                   .reset(reset1), 
                   .data_out(mem_write_data));
 
-logic [31:0] instruction_out2;
+
+// always_ff @( posedge clk1, posedge reset1 ) begin : register4
+//     if (reset1) begin
+//         instruction_out2 <= 32'b0;
+//     end
+//     else begin
+//         instruction_out2 <= instruction_out1;
+//     end
+// end
+
+
 reg_32_bits reg4 (.data_in(instruction_out1), 
                   .clock(clk1), 
                   .reset(reset1), 
@@ -116,9 +160,9 @@ reg_32_bits reg4 (.data_in(instruction_out1),
 reg write_enMEM;
 reg read_enMEM;
 reg wrb_enWb;
-reg wr_enableWb;
 
-always_ff @( posedge clk1 ) begin : controller_signals_regiser
+
+always_ff @( posedge clk1 ) begin : controller_signals_register
     write_enMEM <= write_en;
     read_enMEM  <= read_en;
     wrb_enWb    <= wrb_en;

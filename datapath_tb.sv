@@ -23,7 +23,7 @@ initial begin
     reset_1 = 1;
     @(posedge clk_1); reset_1 = 0;
 
-    repeat(15) begin
+    repeat(18) begin
         @(posedge clk_1);
 
     end
